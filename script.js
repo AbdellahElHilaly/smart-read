@@ -556,7 +556,7 @@ async function queryGroqAI(userMessage, context) {
                 'Content-Type': 'application/json'
             },
             body: JSON.stringify({
-                model: 'mixtral-8x7b-32768',
+                model: 'llama-3.1-8b-instant',
                 messages: [{
                     role: 'system',
                     content: `You are an English teacher helping students learn English. ${context ? `Current text context: ${context}` : 'General English learning'}. Keep your answers brief, clear, and educational. Use simple English. Maximum 200 words.`,
