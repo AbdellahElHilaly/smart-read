@@ -432,16 +432,23 @@ function handleChatKeyPress(e) {
  * Send message to AI
  */
 async function sendChatMessage() {
+    console.log('sendChatMessage called');
     const message = chatInput.value.trim();
-    if (!message) return;
+    console.log('Message:', message);
+    
+    if (!message) {
+        console.log('Message is empty, returning');
+        return;
+    }
 
     // Add user message to chat
+    console.log('Adding user message to chat');
     addChatMessage(message, 'user');
     chatInput.value = '';
 
     // Show loading
-    loadingIndicator.style.display = 'block';
-    sendBtn.disabled = true;
+    if (loadingIndicator) loadingIndicator.style.display = 'block';
+    if (sendBtn) sendBtn.disabled = true;
 
     try {
         // Get current topic for context
@@ -452,18 +459,23 @@ async function sendChatMessage() {
             context = Array.from(words).map(w => w.getAttribute('data-en')).join(' ');
         }
 
+        console.log('Calling queryGroqAI with message:', message);
         const aiResponse = await queryGroqAI(message, context);
-        loadingIndicator.style.display = 'none';
+        console.log('AI Response received:', aiResponse);
+        
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
         
         // Process AI response and add to chat
+        console.log('Adding AI response to chat');
         await addAIResponseToChat(aiResponse);
+        console.log('AI response added successfully');
     } catch (error) {
         console.error('AI Error:', error);
-        addChatMessage('Sorry, I could not process that. Please try again.', 'ai');
-        loadingIndicator.style.display = 'none';
+        addChatMessage('Sorry, I could not process that. Error: ' + error.message, 'ai');
+        if (loadingIndicator) loadingIndicator.style.display = 'none';
     } finally {
-        sendBtn.disabled = false;
-        chatInput.focus();
+        if (sendBtn) sendBtn.disabled = false;
+        if (chatInput) chatInput.focus();
     }
 }
 
@@ -489,14 +501,18 @@ function getGroqApiKey() {
  * Query Groq AI API
  */
 async function queryGroqAI(userMessage, context) {
+    console.log('queryGroqAI called');
     const apiKey = getGroqApiKey();
+    console.log('API Key retrieved:', apiKey ? 'Yes (length: ' + apiKey.length + ')' : 'No');
     
     if (!apiKey) {
         // If no API key, use demo mode
+        console.log('Using demo response');
         return generateDemoResponse(userMessage, context);
     }
     
     try {
+        console.log('Sending request to Groq API');
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -517,15 +533,19 @@ async function queryGroqAI(userMessage, context) {
             })
         });
 
+        console.log('Response status:', response.status);
         const data = await response.json();
+        console.log('Response data:', data);
         
         if (data.choices && data.choices[0] && data.choices[0].message) {
+            console.log('Returning AI response');
             return data.choices[0].message.content;
         } else if (data.error) {
             console.error('Groq API Error:', data.error);
             // If API fails, try demo mode
             return generateDemoResponse(userMessage, context);
         } else {
+            console.log('Unexpected response format, using demo');
             return generateDemoResponse(userMessage, context);
         }
     } catch (error) {
@@ -635,8 +655,19 @@ function handleAIWordClick(element) {
 }
 
 // Event listeners for chat
-sendBtn.addEventListener('click', sendChatMessage);
-chatInput.addEventListener('keypress', handleChatKeyPress);
+if (sendBtn) {
+    console.log('Attaching click listener to sendBtn');
+    sendBtn.addEventListener('click', sendChatMessage);
+} else {
+    console.error('sendBtn not found!');
+}
+
+if (chatInput) {
+    console.log('Attaching keypress listener to chatInput');
+    chatInput.addEventListener('keypress', handleChatKeyPress);
+} else {
+    console.error('chatInput not found!');
+}
 
 // Load data when DOM is ready
 document.addEventListener('DOMContentLoaded', loadData);
