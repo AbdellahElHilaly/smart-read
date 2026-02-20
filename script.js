@@ -447,6 +447,14 @@ function handleChatKeyPress(e) {
  */
 async function sendChatMessage() {
     console.log('sendChatMessage called');
+    console.log('chatInput:', chatInput);
+    console.log('chatContainer:', chatContainer);
+    
+    if (!chatInput) {
+        console.error('chatInput is null!');
+        return;
+    }
+    
     const message = chatInput.value.trim();
     console.log('Message:', message);
     
@@ -466,7 +474,7 @@ async function sendChatMessage() {
 
     try {
         // Get current topic for context
-        const topicId = topicSelect.value;
+        const topicId = topicSelect ? topicSelect.value : '';
         let context = '';
         if (topicId) {
             const words = document.querySelectorAll('.word');
@@ -485,7 +493,7 @@ async function sendChatMessage() {
         console.log('AI response added successfully');
     } catch (error) {
         console.error('AI Error:', error);
-        addChatMessage('Sorry, I could not process that. Error: ' + error.message, 'ai');
+        addChatMessage('❌ خطأ: ' + error.message, 'ai');
         if (loadingIndicator) loadingIndicator.style.display = 'none';
     } finally {
         if (sendBtn) sendBtn.disabled = false;
@@ -502,9 +510,13 @@ function getGroqApiKey() {
     
     if (!apiKey) {
         // If not found, prompt user
-        apiKey = prompt('Please enter your Groq API Key (get free key from https://console.groq.com):\n\nLeave empty to use demo mode.');
+        const message = `🔑 أدخل مفتاح Groq API الخاص بك\n\n📍 كيف تحصل على مفتاح:\n1. اذهب إلى https://console.groq.com\n2. انسخ API Key من Settings\n3. الصقه هنا\n\n💡 أو اترك فارغاً للوضع التجريبي (Demo Mode)`;
+        apiKey = prompt(message);
         if (apiKey && apiKey.trim()) {
             localStorage.setItem('groq_api_key', apiKey.trim());
+            console.log('API Key saved to localStorage');
+        } else {
+            console.log('No API key entered - will use demo mode');
         }
     }
     
@@ -548,6 +560,21 @@ async function queryGroqAI(userMessage, context) {
         });
 
         console.log('Response status:', response.status);
+        
+        if (!response.ok) {
+            console.error('API Response not OK:', response.status, response.statusText);
+            const errorData = await response.json();
+            console.error('Error details:', errorData);
+            
+            // Clear invalid API key if it's a 401
+            if (response.status === 401) {
+                console.warn('Invalid API key - clearing from storage');
+                localStorage.removeItem('groq_api_key');
+                addChatMessage('❌ خطأ: مفتاح API غير صحيح. حاول مرة أخرى بمفتاح صحيح.', 'ai');
+            }
+            return generateDemoResponse(userMessage, context);
+        }
+        
         const data = await response.json();
         console.log('Response data:', data);
         
@@ -563,7 +590,8 @@ async function queryGroqAI(userMessage, context) {
             return generateDemoResponse(userMessage, context);
         }
     } catch (error) {
-        console.error('Groq API Error:', error);
+        console.error('Groq API Fetch Error:', error);
+        console.error('Error type:', error.message);
         // Fallback to demo response if API fails
         return generateDemoResponse(userMessage, context);
     }
@@ -599,17 +627,27 @@ function generateDemoResponse(userMessage, context) {
  * Add message to chat display
  */
 function addChatMessage(text, sender) {
+    if (!chatContainer) {
+        console.error('chatContainer not initialized!');
+        return;
+    }
     const messageDiv = document.createElement('div');
     messageDiv.className = `chat-message ${sender}`;
     messageDiv.textContent = text;
     chatContainer.appendChild(messageDiv);
     chatContainer.scrollTop = chatContainer.scrollHeight;
+    console.log(`Message added (${sender}):`, text);
 }
 
 /**
  * Add AI response with interactive text
  */
 async function addAIResponseToChat(aiText) {
+    if (!chatContainer) {
+        console.error('chatContainer not initialized!');
+        return;
+    }
+    
     const messageDiv = document.createElement('div');
     messageDiv.className = 'chat-message ai';
     
