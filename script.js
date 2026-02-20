@@ -219,13 +219,16 @@ function toggleTranslation(element, skipVoice = false) {
     }
     
     if (isCurrentlyEnglish) {
-        // Switch to Arabic
+        // Switch to Arabic - NO red background, just translation
         element.textContent = arText;
-        element.classList.add('translated');
+        // Don't add background color, just remove it
+        element.style.backgroundColor = 'transparent';
+        element.style.color = 'inherit';
     } else {
         // Switch back to English with original punctuation
         element.textContent = originalText;
-        element.classList.remove('translated');
+        element.style.backgroundColor = 'transparent';
+        element.style.color = 'inherit';
     }
     
     // Add animation
@@ -737,11 +740,11 @@ function handleAIWordClick(element) {
     const isCurrentlyEnglish = cleanCurrentText.toLowerCase() === enText.toLowerCase();
     
     if (isCurrentlyEnglish) {
-        // Speak word and show translation
+        // Speak word and show translation - NO red background
         speakWord(enText);
         element.textContent = arText;
-        element.style.color = '#ff6b6b';
-        element.style.backgroundColor = 'rgba(255, 107, 107, 0.2)';
+        element.style.color = 'inherit';
+        element.style.backgroundColor = 'transparent';
     } else {
         // Show original
         element.textContent = originalText;
