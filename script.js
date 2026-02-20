@@ -6,18 +6,36 @@ let isReadingFullText = false;
 let currentReadingIndex = 0;
 let allWords = [];
 
-// DOM Elements
-const textContent = document.getElementById('textContent');
-const topicSelect = document.getElementById('topicSelect');
-const readBtn = document.getElementById('readBtn');
-const stopBtn = document.getElementById('stopBtn');
-const resetBtn = document.getElementById('resetBtn');
-const clearAllBtn = document.getElementById('clearAllBtn');
-const wordCount = document.getElementById('wordCount');
-const chatInput = document.getElementById('chatInput');
-const sendBtn = document.getElementById('sendBtn');
-const chatContainer = document.getElementById('chatContainer');
-const loadingIndicator = document.getElementById('loadingIndicator');
+// DOM Elements - will be initialized when page loads
+let textContent;
+let topicSelect;
+let readBtn;
+let stopBtn;
+let resetBtn;
+let clearAllBtn;
+let wordCount;
+let chatInput;
+let sendBtn;
+let chatContainer;
+let loadingIndicator;
+
+// Initialize DOM elements
+function initializeDOMElements() {
+    textContent = document.getElementById('textContent');
+    topicSelect = document.getElementById('topicSelect');
+    readBtn = document.getElementById('readBtn');
+    stopBtn = document.getElementById('stopBtn');
+    resetBtn = document.getElementById('resetBtn');
+    clearAllBtn = document.getElementById('clearAllBtn');
+    wordCount = document.getElementById('wordCount');
+    chatInput = document.getElementById('chatInput');
+    sendBtn = document.getElementById('sendBtn');
+    chatContainer = document.getElementById('chatContainer');
+    loadingIndicator = document.getElementById('loadingIndicator');
+    
+    console.log('DOM Elements initialized');
+    console.log('sendBtn:', sendBtn);
+}
 
 /**
  * Speak English word using Web Speech API
@@ -397,12 +415,8 @@ function stopReading() {
     });
 }
 
-// Event listeners for buttons
-readBtn.addEventListener('click', readText);
-stopBtn.addEventListener('click', stopReading);
-resetBtn.addEventListener('click', resetAll);
-clearAllBtn.addEventListener('click', clearAllTranslations);
-topicSelect.addEventListener('change', onTopicChange);
+// Event listeners moved to DOMContentLoaded below
+// All event listeners are now properly initialized in DOMContentLoaded
 
 // Add pulse animation
 const style = document.createElement('style');
@@ -644,7 +658,7 @@ function handleAIWordClick(element) {
         // Speak word and show translation
         speakWord(enText);
         element.textContent = arText;
-        element.style.color = var(--translated);
+        element.style.color = '#ff6b6b';
         element.style.backgroundColor = 'rgba(255, 107, 107, 0.2)';
     } else {
         // Show original
@@ -654,20 +668,38 @@ function handleAIWordClick(element) {
     }
 }
 
-// Event listeners for chat
-if (sendBtn) {
-    console.log('Attaching click listener to sendBtn');
-    sendBtn.addEventListener('click', sendChatMessage);
-} else {
-    console.error('sendBtn not found!');
-}
-
-if (chatInput) {
-    console.log('Attaching keypress listener to chatInput');
-    chatInput.addEventListener('keypress', handleChatKeyPress);
-} else {
-    console.error('chatInput not found!');
-}
-
 // Load data when DOM is ready
-document.addEventListener('DOMContentLoaded', loadData);
+document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOMContentLoaded event fired');
+    initializeDOMElements();
+    loadData();
+    
+    // Attach event listeners AFTER DOM is initialized
+    if (topicSelect) {
+        topicSelect.addEventListener('change', onTopicChange);
+    }
+    if (readBtn) {
+        readBtn.addEventListener('click', () => readText());
+    }
+    if (stopBtn) {
+        stopBtn.addEventListener('click', stopReading);
+    }
+    if (resetBtn) {
+        resetBtn.addEventListener('click', resetAll);
+    }
+    if (clearAllBtn) {
+        clearAllBtn.addEventListener('click', clearAllTranslations);
+    }
+    if (sendBtn) {
+        console.log('Attaching click listener to sendBtn');
+        sendBtn.addEventListener('click', sendChatMessage);
+    } else {
+        console.error('sendBtn not found!');
+    }
+    if (chatInput) {
+        console.log('Attaching keypress listener to chatInput');
+        chatInput.addEventListener('keypress', handleChatKeyPress);
+    } else {
+        console.error('chatInput not found!');
+    }
+});
