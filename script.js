@@ -446,25 +446,27 @@ function handleChatKeyPress(e) {
  * Send message to AI
  */
 async function sendChatMessage() {
-    console.log('sendChatMessage called');
+    console.log('🔴 sendChatMessage CALLED!');
     console.log('chatInput:', chatInput);
     console.log('chatContainer:', chatContainer);
+    console.log('sendBtn:', sendBtn);
     
     if (!chatInput) {
-        console.error('chatInput is null!');
+        console.error('❌ chatInput is null!');
+        alert('Error: Chat input not found');
         return;
     }
     
     const message = chatInput.value.trim();
-    console.log('Message:', message);
+    console.log('📝 Message input:', message);
     
     if (!message) {
-        console.log('Message is empty, returning');
+        console.log('⚠️ Message is empty, returning');
         return;
     }
 
     // Add user message to chat
-    console.log('Adding user message to chat');
+    console.log('✉️ Adding user message to chat');
     addChatMessage(message, 'user');
     chatInput.value = '';
 
@@ -481,18 +483,18 @@ async function sendChatMessage() {
             context = Array.from(words).map(w => w.getAttribute('data-en')).join(' ');
         }
 
-        console.log('Calling queryGroqAI with message:', message);
+        console.log('🚀 Calling queryGroqAI with message:', message);
         const aiResponse = await queryGroqAI(message, context);
-        console.log('AI Response received:', aiResponse);
+        console.log('✅ AI Response received:', aiResponse);
         
         if (loadingIndicator) loadingIndicator.style.display = 'none';
         
         // Process AI response and add to chat
-        console.log('Adding AI response to chat');
+        console.log('💬 Adding AI response to chat');
         await addAIResponseToChat(aiResponse);
-        console.log('AI response added successfully');
+        console.log('✅ AI response added successfully');
     } catch (error) {
-        console.error('AI Error:', error);
+        console.error('❌ AI Error:', error);
         addChatMessage('❌ خطأ: ' + error.message, 'ai');
         if (loadingIndicator) loadingIndicator.style.display = 'none';
     } finally {
@@ -527,18 +529,19 @@ function getGroqApiKey() {
  * Query Groq AI API
  */
 async function queryGroqAI(userMessage, context) {
-    console.log('queryGroqAI called');
+    console.log('🤖 queryGroqAI called');
     const apiKey = getGroqApiKey();
-    console.log('API Key retrieved:', apiKey ? 'Yes (length: ' + apiKey.length + ')' : 'No');
+    console.log('🔑 API Key retrieved:', apiKey ? '✅ Yes (length: ' + apiKey.length + ')' : '❌ No');
     
     if (!apiKey) {
         // If no API key, use demo mode
-        console.log('Using demo response');
+        console.log('📊 Using demo response (no API key)');
         return generateDemoResponse(userMessage, context);
     }
     
     try {
-        console.log('Sending request to Groq API');
+        console.log('🌐 Sending request to Groq API...');
+        console.log('📍 URL: https://api.groq.com/openai/v1/chat/completions');
         const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
             method: 'POST',
             headers: {
@@ -559,39 +562,39 @@ async function queryGroqAI(userMessage, context) {
             })
         });
 
-        console.log('Response status:', response.status);
+        console.log('📥 Response status:', response.status, response.statusText);
         
         if (!response.ok) {
-            console.error('API Response not OK:', response.status, response.statusText);
+            console.error('❌ API Response not OK:', response.status, response.statusText);
             const errorData = await response.json();
-            console.error('Error details:', errorData);
+            console.error('📌 Error details:', errorData);
             
             // Clear invalid API key if it's a 401
             if (response.status === 401) {
-                console.warn('Invalid API key - clearing from storage');
+                console.warn('⚠️ Invalid API key - clearing from storage');
                 localStorage.removeItem('groq_api_key');
-                addChatMessage('❌ خطأ: مفتاح API غير صحيح. حاول مرة أخرى بمفتاح صحيح.', 'ai');
+                addChatMessage('❌ خطأ: مفتاح API غير صحيح. جرب مرة أخرى.', 'ai');
             }
             return generateDemoResponse(userMessage, context);
         }
         
         const data = await response.json();
-        console.log('Response data:', data);
+        console.log('✅ Response data received:', data);
         
         if (data.choices && data.choices[0] && data.choices[0].message) {
-            console.log('Returning AI response');
+            console.log('🎉 Returning AI response');
             return data.choices[0].message.content;
         } else if (data.error) {
-            console.error('Groq API Error:', data.error);
+            console.error('❌ Groq API Error:', data.error);
             // If API fails, try demo mode
             return generateDemoResponse(userMessage, context);
         } else {
-            console.log('Unexpected response format, using demo');
+            console.log('⚠️ Unexpected response format, using demo');
             return generateDemoResponse(userMessage, context);
         }
     } catch (error) {
-        console.error('Groq API Fetch Error:', error);
-        console.error('Error type:', error.message);
+        console.error('❌ Groq API Fetch Error:', error);
+        console.error('📌 Error type:', error.message);
         // Fallback to demo response if API fails
         return generateDemoResponse(userMessage, context);
     }
@@ -708,36 +711,46 @@ function handleAIWordClick(element) {
 
 // Load data when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
-    console.log('DOMContentLoaded event fired');
+    console.log('🎯 DOMContentLoaded event fired');
     initializeDOMElements();
     loadData();
+    
+    console.log('📡 Attaching event listeners...');
     
     // Attach event listeners AFTER DOM is initialized
     if (topicSelect) {
         topicSelect.addEventListener('change', onTopicChange);
+        console.log('✅ topicSelect listener attached');
     }
     if (readBtn) {
         readBtn.addEventListener('click', () => readText());
+        console.log('✅ readBtn listener attached');
     }
     if (stopBtn) {
         stopBtn.addEventListener('click', stopReading);
+        console.log('✅ stopBtn listener attached');
     }
     if (resetBtn) {
         resetBtn.addEventListener('click', resetAll);
+        console.log('✅ resetBtn listener attached');
     }
     if (clearAllBtn) {
         clearAllBtn.addEventListener('click', clearAllTranslations);
+        console.log('✅ clearAllBtn listener attached');
     }
     if (sendBtn) {
-        console.log('Attaching click listener to sendBtn');
+        console.log('🔴 sendBtn FOUND - attaching click listener');
         sendBtn.addEventListener('click', sendChatMessage);
+        console.log('✅ sendBtn click listener attached!');
     } else {
-        console.error('sendBtn not found!');
+        console.error('❌ sendBtn NOT FOUND!');
     }
     if (chatInput) {
-        console.log('Attaching keypress listener to chatInput');
+        console.log('✅ chatInput listener attached');
         chatInput.addEventListener('keypress', handleChatKeyPress);
     } else {
-        console.error('chatInput not found!');
+        console.error('❌ chatInput NOT FOUND!');
     }
+    
+    console.log('🎉 All event listeners attached successfully!');
 });
