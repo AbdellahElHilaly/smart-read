@@ -508,24 +508,28 @@ async function sendChatMessage() {
  */
 function getGroqApiKey() {
     console.log('🔑 getGroqApiKey called');
+    
     // First check localStorage
     let apiKey = localStorage.getItem('groq_api_key');
     console.log('💾 localStorage check - API Key exists:', apiKey ? 'YES' : 'NO');
     
-    if (!apiKey) {
-        // If not found, prompt user
-        console.log('📝 Showing prompt dialog...');
-        const message = `🔑 أدخل مفتاح Groq API الخاص بك\n\n📍 كيف تحصل على مفتاح:\n1. اذهب إلى https://console.groq.com\n2. انسخ API Key من Settings\n3. الصقه هنا\n\n💡 أو اترك فارغاً للوضع التجريبي (Demo Mode)`;
-        apiKey = prompt(message);
-        console.log('📬 Prompt result - API Key entered:', apiKey ? 'YES' : 'NO');
-        
-        if (apiKey && apiKey.trim()) {
-            console.log('💾 Saving API Key to localStorage...');
-            localStorage.setItem('groq_api_key', apiKey.trim());
-            console.log('✅ API Key saved!');
-        } else {
-            console.log('⚠️ No API key entered - will use demo mode');
-        }
+    if (apiKey) {
+        console.log('📤 Using saved API Key from localStorage');
+        return apiKey ? apiKey.trim() : null;
+    }
+    
+    // If not found in localStorage, ask user to enter it one time only
+    console.log('📝 Showing prompt dialog... (this will only appear once)');
+    const message = `🔑 أدخل مفتاح Groq API الخاص بك\n\n📍 كيف تحصل على مفتاح:\n1. اذهب إلى https://console.groq.com/keys\n2. انسخ API Key\n3. الصقه هنا\n\n💡 سيتم حفظه محلياً - لن نطلبه منك مجدداً!\n\nأو اتركه فارغاً للوضع التجريبي (Demo Mode)`;
+    apiKey = prompt(message);
+    console.log('📬 Prompt result - API Key entered:', apiKey ? 'YES' : 'NO');
+    
+    if (apiKey && apiKey.trim()) {
+        console.log('💾 Saving API Key to localStorage...');
+        localStorage.setItem('groq_api_key', apiKey.trim());
+        console.log('✅ API Key saved! Next time you won\'t be asked.');
+    } else {
+        console.log('⚠️ No API key entered - will use demo mode');
     }
     
     console.log('📤 Returning API Key:', apiKey ? `✅ (length: ${apiKey.length})` : '❌ null');
