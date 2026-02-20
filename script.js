@@ -446,7 +446,6 @@ function handleChatKeyPress(e) {
  * Send message to AI
  */
 async function sendChatMessage() {
-    alert('🔴 Send button clicked!'); // FOR DEBUGGING
     console.log('🔴 sendChatMessage CALLED!');
     console.log('chatInput:', chatInput);
     console.log('chatContainer:', chatContainer);
@@ -508,21 +507,28 @@ async function sendChatMessage() {
  * Get or prompt for Groq API Key
  */
 function getGroqApiKey() {
+    console.log('🔑 getGroqApiKey called');
     // First check localStorage
     let apiKey = localStorage.getItem('groq_api_key');
+    console.log('💾 localStorage check - API Key exists:', apiKey ? 'YES' : 'NO');
     
     if (!apiKey) {
         // If not found, prompt user
+        console.log('📝 Showing prompt dialog...');
         const message = `🔑 أدخل مفتاح Groq API الخاص بك\n\n📍 كيف تحصل على مفتاح:\n1. اذهب إلى https://console.groq.com\n2. انسخ API Key من Settings\n3. الصقه هنا\n\n💡 أو اترك فارغاً للوضع التجريبي (Demo Mode)`;
         apiKey = prompt(message);
+        console.log('📬 Prompt result - API Key entered:', apiKey ? 'YES' : 'NO');
+        
         if (apiKey && apiKey.trim()) {
+            console.log('💾 Saving API Key to localStorage...');
             localStorage.setItem('groq_api_key', apiKey.trim());
-            console.log('API Key saved to localStorage');
+            console.log('✅ API Key saved!');
         } else {
-            console.log('No API key entered - will use demo mode');
+            console.log('⚠️ No API key entered - will use demo mode');
         }
     }
     
+    console.log('📤 Returning API Key:', apiKey ? `✅ (length: ${apiKey.length})` : '❌ null');
     return apiKey ? apiKey.trim() : null;
 }
 
