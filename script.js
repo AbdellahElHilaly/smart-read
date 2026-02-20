@@ -446,6 +446,7 @@ function handleChatKeyPress(e) {
  * Send message to AI
  */
 async function sendChatMessage() {
+    alert('🔴 Send button clicked!'); // FOR DEBUGGING
     console.log('🔴 sendChatMessage CALLED!');
     console.log('chatInput:', chatInput);
     console.log('chatContainer:', chatContainer);
