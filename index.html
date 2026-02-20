@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Read - English Learning</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Smart Read</h1>
+            <p class="subtitle">Click words to hear pronunciation and see translation</p>
+        </header>
+
+        <main>
+            <div class="text-container">
+                <p id="textContent" class="text-content">
+                    <!-- Text with clickable spans will be inserted here -->
+                </p>
+            </div>
+
+            <div class="controls">
+                <select id="topicSelect" class="select-topic">
+                    <option value="">Select Topic...</option>
+                </select>
+                <button id="readBtn" class="btn btn-primary">▶ Read</button>
+                <button id="stopBtn" class="btn btn-secondary">⏹ Stop</button>
+                <button id="resetBtn" class="btn btn-secondary">↻ Reset</button>
+                <button id="clearAllBtn" class="btn btn-secondary">✕ Clear</button>
+            </div>
+
+            <div class="stats">
+                <p><span id="wordCount">0</span> words loaded</p>
+            </div>
+        </main>
+
+        <footer>
+            <p>Smart Read - English Learning Tool</p>
+        </footer>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

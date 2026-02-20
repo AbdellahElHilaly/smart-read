@@ -1,0 +1,58 @@
+# 🚀 QUICK START - DEPLOY IN 5 MINUTES
+
+## Option A: Command Line (Recommended)
+
+```bash
+# 1. Create repo on GitHub.com, then run:
+git clone https://github.com/YOUR_USERNAME/smart-read.git
+cd smart-read
+
+# 2. Copy all app files here, then:
+git add .
+git commit -m "Initial commit"
+git push origin main
+
+# 3. Go to Settings → Pages → Select 'main' branch → Save
+# Done! Your app is live in 1-2 minutes
+```
+
+## Option B: GitHub Desktop GUI
+
+1. Download [GitHub Desktop](https://desktop.github.com)
+2. Create new repository named `smart-read`
+3. Copy all app files into that folder
+4. Commit & Publish with one click
+5. Enable GitHub Pages in Settings → Pages
+
+## Option C: Direct Upload
+
+1. Go to github.com and create new repository
+2. Click "uploading an existing file"
+3. Drag all files into GitHub
+4. Enable GitHub Pages → Done!
+
+---
+
+## 📱 Access from Phone
+
+After deployment, visit:
+```
+https://YOUR_USERNAME.github.io/smart-read/
+```
+
+- ✅ Works on all phones
+- ✅ Fully responsive
+- ✅ Can bookmark for home screen shortcut
+
+---
+
+## 📋 Files to Upload
+
+- `index.html`
+- `style.css`
+- `script.js`
+- `data.json`
+- `README.md`
+- `.gitignore` (optional)
+
+That's it! Everything else is automatic. 🎉
