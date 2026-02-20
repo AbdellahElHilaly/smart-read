@@ -14,6 +14,10 @@ const stopBtn = document.getElementById('stopBtn');
 const resetBtn = document.getElementById('resetBtn');
 const clearAllBtn = document.getElementById('clearAllBtn');
 const wordCount = document.getElementById('wordCount');
+const chatInput = document.getElementById('chatInput');
+const sendBtn = document.getElementById('sendBtn');
+const chatContainer = document.getElementById('chatContainer');
+const loadingIndicator = document.getElementById('loadingIndicator');
 
 /**
  * Speak English word using Web Speech API
@@ -413,6 +417,197 @@ style.textContent = `
     }
 `;
 document.head.appendChild(style);
+
+/**
+ * Handle chat key press
+ */
+function handleChatKeyPress(e) {
+    if (e.key === 'Enter' && !e.shiftKey) {
+        e.preventDefault();
+        sendChatMessage();
+    }
+}
+
+/**
+ * Send message to AI
+ */
+async function sendChatMessage() {
+    const message = chatInput.value.trim();
+    if (!message) return;
+
+    // Add user message to chat
+    addChatMessage(message, 'user');
+    chatInput.value = '';
+
+    // Show loading
+    loadingIndicator.style.display = 'block';
+    sendBtn.disabled = true;
+
+    try {
+        // Get current topic for context
+        const topicId = topicSelect.value;
+        let context = '';
+        if (topicId) {
+            const words = document.querySelectorAll('.word');
+            context = Array.from(words).map(w => w.getAttribute('data-en')).join(' ');
+        }
+
+        const aiResponse = await queryGroqAI(message, context);
+        loadingIndicator.style.display = 'none';
+        
+        // Process AI response and add to chat
+        await addAIResponseToChat(aiResponse);
+    } catch (error) {
+        console.error('AI Error:', error);
+        addChatMessage('Sorry, I could not process that. Please try again.', 'ai');
+        loadingIndicator.style.display = 'none';
+    } finally {
+        sendBtn.disabled = false;
+        chatInput.focus();
+    }
+}
+
+/**
+ * Query Groq AI API
+ */
+async function queryGroqAI(userMessage, context) {
+    // Note: For free usage, we'll use a simpler approach
+    // You'll need to set up Groq API key for production
+    // For now, returning a demo response
+    
+    // In production, uncomment and use this with your API key:
+    /*
+    const apiKey = 'your-groq-api-key-here';
+    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+            'Authorization': `Bearer ${apiKey}`,
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            model: 'mixtral-8x7b-32768',
+            messages: [{
+                role: 'system',
+                content: `You are an English teacher helping students learn. Context: ${context || 'General English learning'}`,
+            }, {
+                role: 'user',
+                content: userMessage
+            }],
+            max_tokens: 500,
+            temperature: 0.7
+        })
+    });
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+    */
+
+    // For demo: simulate AI response with context-aware answers
+    return generateDemoResponse(userMessage, context);
+}
+
+/**
+ * Generate demo AI response (when API key not configured)
+ */
+function generateDemoResponse(userMessage, context) {
+    const responses = {
+        'what': 'This is a great question! The context here relates to learning English effectively. You can click on any word to see its meaning and pronunciation.',
+        'how': 'Great question! You can use this app by selecting a topic, reading the text, and clicking words to see translations. Use the Read button to hear natural pronunciation.',
+        'meaning': 'The meaning depends on context. Try clicking the word to see its translation, and read the surrounding words to understand the full context.',
+        'pronounce': 'This word is pronounced in a specific way. Click the word to hear the pronunciation from the text above!',
+        'translate': 'Great! Click any word in the text above to see its Arabic translation instantly.',
+        'learn': 'Excellent approach! Reading, listening, and practicing are the best ways to learn English. Use all features of this app to improve!',
+        'help': 'I am here to help! Ask me questions about English, vocabulary, grammar, or anything related to the text. Click any word for translation and pronunciation.',
+    };
+
+    let response = 'This is a great question! To best help you, I recommend: 1) Read the entire text first 2) Click on difficult words 3) Use the Read button to hear pronunciation 4) Practice speaking the words aloud.';
+    
+    for (const [key, value] of Object.entries(responses)) {
+        if (userMessage.toLowerCase().includes(key)) {
+            response = value;
+            break;
+        }
+    }
+
+    return response;
+}
+
+/**
+ * Add message to chat display
+ */
+function addChatMessage(text, sender) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = `chat-message ${sender}`;
+    messageDiv.textContent = text;
+    chatContainer.appendChild(messageDiv);
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+/**
+ * Add AI response with interactive text
+ */
+async function addAIResponseToChat(aiText) {
+    const messageDiv = document.createElement('div');
+    messageDiv.className = 'chat-message ai';
+    
+    // Process text into words with spans
+    const words = aiText.split(/\s+/);
+    
+    // Create spans for each word (make them clickable like main text)
+    const spans = words.map((word, index) => {
+        const cleanWord = word.replace(/[.,!?;:]/g, '');
+        const translation = translationMap[cleanWord.toLowerCase()] || cleanWord;
+        
+        // For AI response words, try to find translation in our map, otherwise use English
+        const arTranslation = translationMap[cleanWord.toLowerCase()] || `(${cleanWord})`;
+        
+        return `<span class="word" style="display: inline; padding: 1px 2px; margin: 0 1px; cursor: pointer; border-bottom: 1px dotted #666;" data-en="${cleanWord}" data-ar="${arTranslation}" data-original="${word}" data-chat="true">${word}</span>`;
+    }).join(' ');
+    
+    messageDiv.innerHTML = spans;
+    chatContainer.appendChild(messageDiv);
+    
+    // Add click listeners to AI response words
+    const aiWords = messageDiv.querySelectorAll('.word');
+    aiWords.forEach(word => {
+        word.addEventListener('click', function(e) {
+            e.stopPropagation();
+            handleAIWordClick(this);
+        });
+    });
+
+    chatContainer.scrollTop = chatContainer.scrollHeight;
+}
+
+/**
+ * Handle click on AI response words
+ */
+function handleAIWordClick(element) {
+    const enText = element.getAttribute('data-en');
+    const arText = element.getAttribute('data-ar');
+    const originalText = element.getAttribute('data-original');
+    const currentText = element.textContent.trim();
+    
+    const cleanCurrentText = currentText.replace(/[.,!?;:]/g, '');
+    const isCurrentlyEnglish = cleanCurrentText.toLowerCase() === enText.toLowerCase();
+    
+    if (isCurrentlyEnglish) {
+        // Speak word and show translation
+        speakWord(enText);
+        element.textContent = arText;
+        element.style.color = var(--translated);
+        element.style.backgroundColor = 'rgba(255, 107, 107, 0.2)';
+    } else {
+        // Show original
+        element.textContent = originalText;
+        element.style.color = 'inherit';
+        element.style.backgroundColor = 'transparent';
+    }
+}
+
+// Event listeners for chat
+sendBtn.addEventListener('click', sendChatMessage);
+chatInput.addEventListener('keypress', handleChatKeyPress);
 
 // Load data when DOM is ready
 document.addEventListener('DOMContentLoaded', loadData);
