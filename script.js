@@ -468,42 +468,71 @@ async function sendChatMessage() {
 }
 
 /**
+ * Get or prompt for Groq API Key
+ */
+function getGroqApiKey() {
+    // First check localStorage
+    let apiKey = localStorage.getItem('groq_api_key');
+    
+    if (!apiKey) {
+        // If not found, prompt user
+        apiKey = prompt('Please enter your Groq API Key (get free key from https://console.groq.com):\n\nLeave empty to use demo mode.');
+        if (apiKey && apiKey.trim()) {
+            localStorage.setItem('groq_api_key', apiKey.trim());
+        }
+    }
+    
+    return apiKey ? apiKey.trim() : null;
+}
+
+/**
  * Query Groq AI API
  */
 async function queryGroqAI(userMessage, context) {
-    // Note: For free usage, we'll use a simpler approach
-    // You'll need to set up Groq API key for production
-    // For now, returning a demo response
+    const apiKey = getGroqApiKey();
     
-    // In production, uncomment and use this with your API key:
-    /*
-    const apiKey = 'your-groq-api-key-here';
-    const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-            'Authorization': `Bearer ${apiKey}`,
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            model: 'mixtral-8x7b-32768',
-            messages: [{
-                role: 'system',
-                content: `You are an English teacher helping students learn. Context: ${context || 'General English learning'}`,
-            }, {
-                role: 'user',
-                content: userMessage
-            }],
-            max_tokens: 500,
-            temperature: 0.7
-        })
-    });
+    if (!apiKey) {
+        // If no API key, use demo mode
+        return generateDemoResponse(userMessage, context);
+    }
+    
+    try {
+        const response = await fetch('https://api.groq.com/openai/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+                'Authorization': `Bearer ${apiKey}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                model: 'mixtral-8x7b-32768',
+                messages: [{
+                    role: 'system',
+                    content: `You are an English teacher helping students learn English. ${context ? `Current text context: ${context}` : 'General English learning'}. Keep your answers brief, clear, and educational. Use simple English. Maximum 200 words.`,
+                }, {
+                    role: 'user',
+                    content: userMessage
+                }],
+                max_tokens: 300,
+                temperature: 0.7
+            })
+        });
 
-    const data = await response.json();
-    return data.choices[0].message.content;
-    */
-
-    // For demo: simulate AI response with context-aware answers
-    return generateDemoResponse(userMessage, context);
+        const data = await response.json();
+        
+        if (data.choices && data.choices[0] && data.choices[0].message) {
+            return data.choices[0].message.content;
+        } else if (data.error) {
+            console.error('Groq API Error:', data.error);
+            // If API fails, try demo mode
+            return generateDemoResponse(userMessage, context);
+        } else {
+            return generateDemoResponse(userMessage, context);
+        }
+    } catch (error) {
+        console.error('Groq API Error:', error);
+        // Fallback to demo response if API fails
+        return generateDemoResponse(userMessage, context);
+    }
 }
 
 /**
