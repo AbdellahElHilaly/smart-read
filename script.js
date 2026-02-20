@@ -650,6 +650,37 @@ function addChatMessage(text, sender) {
 }
 
 /**
+ * Translate a word using Google Translate API or return from local dictionary
+ */
+async function translateWord(englishWord) {
+    // First check our local dictionary
+    if (translationMap[englishWord.toLowerCase()]) {
+        return translationMap[englishWord.toLowerCase()];
+    }
+    
+    // Try Google Translate API (free, no key needed for basic usage)
+    try {
+        console.log('🌐 Translating via Google Translate:', englishWord);
+        const encodedWord = encodeURIComponent(englishWord);
+        const response = await fetch(
+            `https://api.mymemory.translated.net/get?q=${encodedWord}&langpair=en|ar`,
+            { mode: 'cors' }
+        );
+        const data = await response.json();
+        
+        if (data.responseStatus === 200 && data.responseData.translatedText) {
+            console.log('✅ Translation found:', data.responseData.translatedText);
+            return data.responseData.translatedText;
+        }
+    } catch (error) {
+        console.warn('⚠️ Translation service unavailable:', error.message);
+    }
+    
+    // Fallback: return word in parentheses
+    return `(${englishWord})`;
+}
+
+/**
  * Add AI response with interactive text
  */
 async function addAIResponseToChat(aiText) {
@@ -665,17 +696,16 @@ async function addAIResponseToChat(aiText) {
     const words = aiText.split(/\s+/);
     
     // Create spans for each word (make them clickable like main text)
-    const spans = words.map((word, index) => {
+    const spans = await Promise.all(words.map(async (word) => {
         const cleanWord = word.replace(/[.,!?;:]/g, '');
-        const translation = translationMap[cleanWord.toLowerCase()] || cleanWord;
         
-        // For AI response words, try to find translation in our map, otherwise use English
-        const arTranslation = translationMap[cleanWord.toLowerCase()] || `(${cleanWord})`;
+        // Get translation from dictionary or translator
+        const arTranslation = await translateWord(cleanWord);
         
         return `<span class="word" style="display: inline; padding: 1px 2px; margin: 0 1px; cursor: pointer; border-bottom: 1px dotted #666;" data-en="${cleanWord}" data-ar="${arTranslation}" data-original="${word}" data-chat="true">${word}</span>`;
-    }).join(' ');
+    }));
     
-    messageDiv.innerHTML = spans;
+    messageDiv.innerHTML = spans.join(' ');
     chatContainer.appendChild(messageDiv);
     
     // Add click listeners to AI response words
