@@ -10,7 +10,7 @@
     <div class="container">
         <header>
             <h1>Smart Read</h1>
-            <p class="subtitle">Click words to hear pronunciation and see translation</p>
+            <p class="subtitle">???? ??? ??????? ????? ????? ???????? (Click words for pronunciation & translation)</p>
         </header>
 
         <main>
@@ -22,12 +22,27 @@
 
             <div class="controls">
                 <select id="topicSelect" class="select-topic">
-                    <option value="">Select Topic...</option>
+                    <option value="">اختر موضوع... (Select Topic...)</option>
                 </select>
-                <button id="readBtn" class="btn btn-primary">▶ Read</button>
-                <button id="stopBtn" class="btn btn-secondary">⏹ Stop</button>
-                <button id="resetBtn" class="btn btn-secondary">↻ Reset</button>
-                <button id="clearAllBtn" class="btn btn-secondary">✕ Clear</button>
+                <button id="readBtn" class="btn btn-primary">▶ قراءة (Read)</button>
+                <button id="stopBtn" class="btn btn-secondary">⏹ إيقاف (Stop)</button>
+                <button id="resetBtn" class="btn btn-secondary">↻ إعادة (Reset)</button>
+                <button id="clearAllBtn" class="btn btn-secondary">✕ حذف (Clear)</button>
+            </div>
+
+            <div class="reading-controls">
+                <label for="speedSlider">سرعة القراءة (Reading Speed):</label>
+                <div class="speed-control">
+                    <input type="range" id="speedSlider" class="speed-slider" min="0.5" max="2" step="0.1" value="0.85">
+                    <span id="speedValue" class="speed-value">0.85x</span>
+                </div>
+            </div>
+
+            <div class="progress-bar-container" id="progressContainer" style="display: none;">
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <p class="progress-text"><span id="currentWord">0</span> / <span id="totalWords">0</span></p>
             </div>
 
             <div class="stats">

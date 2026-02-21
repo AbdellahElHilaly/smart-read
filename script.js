@@ -5,6 +5,7 @@ let isSpeaking = false;
 let isReadingFullText = false;
 let currentReadingIndex = 0;
 let allWords = [];
+let readingSpeed = 0.85; // Default reading speed
 
 // DOM Elements - will be initialized when page loads
 let textContent;
@@ -18,6 +19,12 @@ let chatInput;
 let sendBtn;
 let chatContainer;
 let loadingIndicator;
+let speedSlider;
+let speedValue;
+let progressContainer;
+let progressFill;
+let currentWordSpan;
+let totalWordsSpan;
 
 // Initialize DOM elements
 function initializeDOMElements() {
@@ -32,6 +39,12 @@ function initializeDOMElements() {
     sendBtn = document.getElementById('sendBtn');
     chatContainer = document.getElementById('chatContainer');
     loadingIndicator = document.getElementById('loadingIndicator');
+    speedSlider = document.getElementById('speedSlider');
+    speedValue = document.getElementById('speedValue');
+    progressContainer = document.getElementById('progressContainer');
+    progressFill = document.getElementById('progressFill');
+    currentWordSpan = document.getElementById('currentWord');
+    totalWordsSpan = document.getElementById('totalWords');
     
     console.log('DOM Elements initialized');
     console.log('sendBtn:', sendBtn);
@@ -292,7 +305,7 @@ function readText() {
     // Create utterance for continuous reading
     const utterance = new SpeechSynthesisUtterance(fullText);
     utterance.lang = 'en-US';
-    utterance.rate = 0.85;
+    utterance.rate = readingSpeed;
     utterance.pitch = 1;
     utterance.volume = 1;
     
@@ -315,6 +328,16 @@ function readText() {
                 
                 // Add highlight to current word
                 words[nextWordIndex].classList.add('reading');
+                
+                // Update progress
+                if (currentWordSpan) {
+                    currentWordSpan.textContent = nextWordIndex + 1;
+                }
+                if (progressFill) {
+                    const percentage = ((nextWordIndex + 1) / words.length) * 100;
+                    progressFill.style.width = percentage + '%';
+                }
+                
                 nextWordIndex++;
                 
                 if (nextWordIndex < words.length) {
@@ -326,6 +349,8 @@ function readText() {
         
         // Highlight first word
         words[0].classList.add('reading');
+        if (currentWordSpan) currentWordSpan.textContent = 1;
+        if (progressFill) progressFill.style.width = '0%';
         nextWordIndex = 1;
         
         if (words.length > 1) {
@@ -358,6 +383,9 @@ function readText() {
         readBtn.style.opacity = '1';
         if (highlightTimeoutId) {
             clearTimeout(highlightTimeoutId);
+        }
+        if (progressContainer) {
+            progressContainer.style.display = 'none';
         }
     };
 
@@ -798,3 +826,10 @@ document.addEventListener('DOMContentLoaded', function() {
     
     console.log('🎉 All event listeners attached successfully!');
 });
+
+
+
+
+
+
+
